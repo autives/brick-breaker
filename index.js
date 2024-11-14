@@ -18,6 +18,8 @@ var previous_line_add = 0;
 var ctx;
 var ball_position;
 var ball_velocity;
+var ball_magnitude;
+var ball_direction;
 var player_position;
 var player_velocity = 0;
 var score = 0;
@@ -80,7 +82,9 @@ function init() {
     score = 0;
     lines.push(newLine(ctx.canvas.width));
     ball_position = { x: Math.floor(ctx.canvas.width / 2), y: ctx.canvas.height / 2 - ball_radius };
-    ball_velocity = { x: 200, y: -200 };
+    ball_magnitude = 350;
+    ball_direction = 45;
+    ball_velocity = { x: ball_magnitude * Math.sin(ball_direction), y: -ball_magnitude * Math.cos(ball_direction) };
     player_position = { x: (ctx.canvas.width - brick_width) / 2, y: ctx.canvas.height - line_height };
     player_velocity = 0;
     onkeydown = function (e) {
@@ -101,6 +105,8 @@ function init() {
     };
     score_element = document.getElementById("score");
     score_element.innerHTML = "Score: 0";
+    var pauseButton = document.getElementById("pause-button");
+    pauseButton.innerHTML = "Pause";
 }
 window.onload = function () {
     var pauseButton = document.getElementById("pause-button");
@@ -167,21 +173,22 @@ function gameLoop(time) {
         ctx.fillText("GAME OVER!", (ctx.canvas.width - 600) / 2, ctx.canvas.height / 2, 600);
     }
     else {
+        ball_velocity = { x: ball_magnitude * Math.sin(ball_direction), y: -ball_magnitude * Math.cos(ball_direction) };
         ball_position.x += dt * ball_velocity.x;
         ball_position.y += dt * ball_velocity.y;
         if (ball_position.x + ball_radius >= ctx.canvas.width) {
-            ball_velocity.x = -ball_velocity.x;
+            ball_direction = -ball_direction;
             ball_position.x = ctx.canvas.width - ball_radius;
         }
         if (ball_position.x - ball_radius <= 0) {
-            ball_velocity.x = -ball_velocity.x;
+            ball_direction = -ball_direction;
             ball_position.x = ball_radius;
         }
         if (ball_position.y + ball_radius >= ctx.canvas.height) {
             game_over = true;
         }
         if (ball_position.y - ball_radius <= 0) {
-            ball_velocity.y = -ball_velocity.y;
+            ball_direction = Math.PI - ball_direction;
             ball_position.y = ball_radius;
         }
         for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
@@ -198,7 +205,7 @@ function gameLoop(time) {
                     score += 1;
                     score_element.innerHTML = "Score: ".concat(score);
                     if (collision_1 === RectCircleCollisionResult.HorizontalFace) {
-                        ball_velocity.y = -ball_velocity.y;
+                        ball_direction = Math.PI - ball_direction;
                         if (ball_position.y < y) {
                             ball_position.y = y - ball_radius;
                         }
@@ -207,7 +214,7 @@ function gameLoop(time) {
                         }
                     }
                     if (collision_1 === RectCircleCollisionResult.VerticalFace) {
-                        ball_velocity.x = -ball_velocity.x;
+                        ball_direction = -ball_direction;
                         if (ball_position.x < x) {
                             ball_position.x = x - ball_radius;
                         }
@@ -216,8 +223,7 @@ function gameLoop(time) {
                         }
                     }
                     if (collision_1 === RectCircleCollisionResult.Corner) {
-                        ball_velocity.y = -ball_velocity.y;
-                        ball_velocity.x = -ball_velocity.x;
+                        ball_direction += Math.PI;
                     }
                 }
             }
@@ -225,15 +231,14 @@ function gameLoop(time) {
         var collision = rectCircleCollision(player_position, { x: brick_width, y: line_height }, ball_position, ball_radius);
         if (collision != RectCircleCollisionResult.None) {
             if (collision === RectCircleCollisionResult.HorizontalFace) {
-                ball_velocity.y = -ball_velocity.y;
+                ball_direction = -60 * (ball_position.x - (player_position.x + brick_width / 2)) / (brick_width / 2);
                 ball_position.y = player_position.y - ball_radius;
             }
             if (collision === RectCircleCollisionResult.VerticalFace) {
-                ball_velocity.x = -ball_velocity.x;
+                ball_direction = -ball_direction;
             }
             if (collision === RectCircleCollisionResult.Corner) {
-                ball_velocity.y = -ball_velocity.y;
-                ball_velocity.x = -ball_velocity.x;
+                ball_direction += Math.PI;
             }
         }
         player_position.x += dt * player_velocity;
