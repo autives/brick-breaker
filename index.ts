@@ -104,7 +104,7 @@ function init() {
     lines.push(newLine(ctx.canvas.width))
     ball_position = {x: Math.floor(ctx.canvas.width/2), y: ctx.canvas.height/2 - ball_radius};
     ball_magnitude = 350;
-    ball_direction = 45;
+    ball_direction = Math.PI/4;
     ball_velocity = {x: ball_magnitude*Math.sin(ball_direction), y: -ball_magnitude*Math.cos(ball_direction)}
 
     player_position = {x: (ctx.canvas.width - brick_width)/2, y: ctx.canvas.height - line_height};
@@ -247,7 +247,7 @@ function gameLoop(time: DOMHighResTimeStamp) {
 	let collision = rectCircleCollision(player_position, {x:brick_width, y:line_height}, ball_position, ball_radius);
 	if (collision != RectCircleCollisionResult.None) {
 	    if (collision === RectCircleCollisionResult.HorizontalFace) {
-		ball_direction = -60 * (ball_position.x - (player_position.x + brick_width/2)) / (brick_width/2);
+		ball_direction = Math.PI/3 * (ball_position.x - (player_position.x + brick_width/2)) / (brick_width/2);
 		ball_position.y = player_position.y - ball_radius;
 	    }
 	    if (collision === RectCircleCollisionResult.VerticalFace) {
